@@ -62,6 +62,9 @@ const (
 	// rowFootnoteLineEnding: GitHub garbles a footnote reference label across
 	// a line ending.
 	rowFootnoteLineEnding
+	// rowEmptyListBlank: GitHub continues an empty item on an indented blank
+	// line, where CommonMark ends it.
+	rowEmptyListBlank
 )
 
 // dialectRows is a set of dialect rows.
@@ -83,6 +86,13 @@ func (t *Tree) DialectSpans() []NodeID {
 		ids[i] = NodeID(s.id)
 	}
 	return ids
+}
+
+// DialectSuffix returns the first top-level block of a suffix that must stay
+// as written, and whether there is one. An empty item that GitHub continues
+// can hold several later blocks, so preserving its own block is insufficient.
+func (t *Tree) DialectSuffix() (NodeID, bool) {
+	return NodeID(t.dialectSuffix), t.dialectSuffix != 0
 }
 
 // findDialectSpans returns the dialect spans of t in node order. Each
@@ -171,6 +181,9 @@ func (f *spanFinder) leaf(id uint32) {
 
 func (f *spanFinder) enter(id uint32, n Node) {
 	t := f.t
+	if t.dialectSuffix != 0 && id == t.dialectSuffix {
+		f.add(id, rowEmptyListBlank)
+	}
 	switch n.kind {
 	case Paragraph, Heading, TableCell:
 		f.block = id

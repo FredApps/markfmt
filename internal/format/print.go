@@ -171,15 +171,33 @@ func (p *printer) document() {
 	p.stack = make([]frame, 0, depth)
 	p.lineStart, p.inputLine, p.indent = true, true, -1
 	c := t.Walk()
+	suffix, hasSuffix := t.DialectSuffix()
 	for e, ok := c.Next(); ok && !p.full; e, ok = c.Next() {
 		switch {
 		case e.Exit:
 			p.exit()
+		case hasSuffix && e.ID == suffix:
+			p.rawSuffix(e.ID)
+			return
 		case p.raw[e.ID]:
 			p.rawBlock(&c, e.ID)
 		default:
 			p.node(e.ID)
 		}
+	}
+}
+
+// rawSuffix writes the input from block id through its end with LF line
+// endings. GitHub can keep later blocks and their blank lines inside an empty
+// item that CommonMark ended, so the suffix must stay contiguous.
+func (p *printer) rawSuffix(id markdown.NodeID) {
+	t := p.tree
+	p.layout.Visit(id)
+	p.separate(len(p.stack)-1, id, t.Kind(id), true)
+	start, _ := t.NodeSpan(id)
+	p.writeLF(t.Raw(0)[start:])
+	if !bytes.HasSuffix(p.out, lineFeed) {
+		p.write(lineFeed)
 	}
 }
 

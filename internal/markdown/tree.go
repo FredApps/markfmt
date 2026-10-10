@@ -25,6 +25,8 @@ type Tree struct {
 	src   []byte
 	nodes []Node        // nodes[0] is the document
 	spans []dialectSpan // the dialect spans, in node order
+
+	dialectSuffix uint32 // the first top-level block of a kept dialect suffix, or 0
 }
 
 // NodeID is the index of a node in a [Tree].

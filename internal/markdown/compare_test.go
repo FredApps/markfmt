@@ -114,6 +114,9 @@ func TestEqual(t *testing.T) {
 		// search interrupts is a dialect span (github 17), which renders equal
 		// test HTML in both forms.
 		for _, pair := range [][2]string{
+			{"*\n\t\n  a\n", "*\n\t\na\n"},
+			{"*\n\t\n  a\n\n  b\n", "*\n\t\n  a\n\n b\n"},
+			{"*\n\t\n  a\n \t\n  b\n", "*\n\t\n  a\n\n  b\n"},
 			{"a  \n<search>", "a\n<search>"},
 			{"> a\n> b\n<search>", "> a\nb\n<search>"},
 			{"£~!a~", "£~~!a~~"},
@@ -137,6 +140,8 @@ func TestEqual(t *testing.T) {
 		}
 		for _, pair := range [][2]string{
 			{"> a\r\n> b\r\n<search>", "> a\n> b\n<search>"},
+			{"*\r\n\t\r\n  a", "*\n\t\n  a\n"},
+			{"#  h\n\n*\n\t\n  a", "# h\n\n*\n\t\n  a\n"},
 			{"- a\n\tb\n<search>", "- a\n    b\n<search>"},
 			{"[x]: /u\n'", "[x]: /u\n'\n"},
 			{" ```\f\n\t0", " ```\f\n    0"},

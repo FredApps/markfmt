@@ -59,6 +59,11 @@ func TestTree_DialectSpans(t *testing.T) {
 		{"finds no span for a line of 99 list items", strings.Repeat("- ", 99) + "a", nil},
 		{"finds a footnote reference whose caret is an escape or an entity reference", "a[\\^1] b[&#94;1]\n\n[^1]: x", []string{"Paragraph 15"}},
 		{"finds a footnote reference with a line ending in its label", "a[^b\nc]\n\n[^b]: x", []string{"Paragraph 16"}},
+		{"finds an empty item followed by an indented blank", "*\n\t\n  a\n", []string{"List 17"}},
+		{"finds an empty item inside a quote followed by an indented blank", "> *\n>   \n>   a\n", []string{"BlockQuote 17"}},
+		{"finds the outer list of an empty nested item followed by an indented blank", "* *\n    \n    a\n", []string{"List 17"}},
+		{"finds no span for a shorter blank after an empty item", "*\n \n  a\n", nil},
+		{"finds no span for a blank in an item with content", "* a\n  \n  b\n", nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -122,6 +127,7 @@ func TestTree_DialectSpans(t *testing.T) {
 // dialectFixtures maps the GitHub fixture of each row of testdata/dialect.md
 // to its row.
 var dialectFixtures = map[string]dialectRow{
+	"dialect/empty-list-blank":        rowEmptyListBlank,
 	"dialect/html-block-search":       rowSearch,
 	"dialect/html-block-source":       rowSource,
 	"dialect/html-block-declaration":  rowDeclaration,

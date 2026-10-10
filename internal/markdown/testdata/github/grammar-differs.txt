@@ -19,3 +19,4 @@
 23 dialect row, list items that start on one line: github 23
 29 dialect row, footnote reference whose caret is an escape or an entity reference: github 29
 37 dialect row, footnote reference label across a line ending: github 37
+78 dialect row, indented blank line after an empty list item: github 78

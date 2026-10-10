@@ -848,3 +848,21 @@ c]
 <p>a[^b
 c]</p>
 ````````````````````````````````
+
+## github 78
+
+A list item can begin with at most one blank line (CM 280), including lines
+of spaces or tabs. GitHub tests indentation first and continues the empty
+item (`../dialect.md`). The formatter keeps the enclosing top-level block
+and the rest of the document as written to preserve both readings.
+
+```````````````````````````````` example
+*
+→
+  0
+.
+<ul>
+<li></li>
+</ul>
+<p>0</p>
+````````````````````````````````

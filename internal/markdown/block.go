@@ -35,6 +35,8 @@ type blockParser struct {
 	trace  func(line, int, int, bool)
 	label  []byte // a normalized label
 
+	dialectSuffix uint32 // the first top-level block whose suffix must stay as written
+
 	pending []pendingLine // lines of the open leaf block that are not appended yet
 	arena   []prefixLeaf  // prefix leaves of the pending lines
 

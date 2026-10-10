@@ -56,7 +56,9 @@ func parseBlocks(src []byte, defs *definitions, pass1 bool, trace func(line, int
 	}
 	p.closeUnmatched(1)
 	p.b.close()
-	return p.b.finish()
+	tree := p.b.finish()
+	tree.dialectSuffix = p.dialectSuffix
+	return tree
 }
 
 // definitions is the link label list and the footnote label list: the

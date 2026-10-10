@@ -1598,3 +1598,18 @@ a\|b c\\|d `e\|f`
 <li class="task-list-item"><input type="checkbox" id="" disabled="" class="task-list-item-checkbox" aria-label="Incomplete task"> c</li>
 </ul>
 ````````````````````````````````
+
+## dialect/empty-list-blank
+
+Captured 2026-10-10 with POST `https://api.github.com/markdown`,
+`mode=gfm`; response `x-commonmarker-version: 0.23.12`.
+
+```````````````````````````````` example
+*
+→
+  0
+.
+<ul>
+<li>0</li>
+</ul>
+````````````````````````````````

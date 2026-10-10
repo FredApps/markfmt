@@ -96,14 +96,19 @@ func (p *blockParser) startItem(m listMarker, indent, matched int) {
 }
 
 // continueItem reports whether list item c continues on the rest of the line:
-// on its content indentation, or on a blank rest when it has a child. The bytes
-// it consumes are one [ItemIndent] leaf.
+// on a non-blank rest with its content indentation, or on a blank rest when
+// it has a child. The bytes it consumes are one [ItemIndent] leaf.
 func (p *blockParser) continueItem(c container) bool {
 	first, indent := p.indentation()
 	switch {
+	case first == p.l.end && !c.child:
+		if indent >= int(c.indent) && p.dialectSuffix == 0 && !p.pass1 {
+			p.dialectSuffix = p.containers[1].node
+		}
+		return false
 	case indent >= int(c.indent):
 		indent = int(c.indent)
-	case first == p.l.end && c.child:
+	case first == p.l.end:
 	default:
 		return false
 	}

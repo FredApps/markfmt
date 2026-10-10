@@ -11,6 +11,9 @@ import (
 // with a key for each structure node, a Content event for each run of content
 // leaves of one group, and an Exit event at the end of each structure node.
 func Equal(a, b *Tree) error {
+	if !equalDialectSuffix(a, b) {
+		return &MismatchError{At: NodeID(a.dialectSuffix), msg: "markdown: different dialect suffixes"}
+	}
 	c := comparer{a: a, b: b}
 	pa, pb := newProjection(a), newProjection(b)
 	// spanEnd is one past the last node of the dialect span of a that Equal
@@ -43,6 +46,26 @@ func Equal(a, b *Tree) error {
 				return &MismatchError{At: ea.id, msg: fmt.Sprintf("markdown: different dialect spans: %s against %s", describe(a, ea, okA), describe(b, eb, okB))}
 			}
 			spanEnd = a.nodes[ea.id].link
+		}
+	}
+}
+
+// equalDialectSuffix compares kept suffixes without changing their whitespace.
+// Line endings and a final line ending have no effect on their meaning.
+func equalDialectSuffix(a, b *Tree) bool {
+	if a.dialectSuffix == 0 || b.dialectSuffix == 0 {
+		return a.dialectSuffix == 0 && b.dialectSuffix == 0
+	}
+	as, bs := a.src[a.nodes[a.dialectSuffix].start:], b.src[b.nodes[b.dialectSuffix].start:]
+	la, lb := newLines(as), newLines(bs)
+	for {
+		x, okA := la.next()
+		y, okB := lb.next()
+		if okA != okB || !bytes.Equal(as[x.start:x.end], bs[y.start:y.end]) {
+			return false
+		}
+		if !okA {
+			return true
 		}
 	}
 }
