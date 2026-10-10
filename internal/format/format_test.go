@@ -89,6 +89,47 @@ func TestSource(t *testing.T) {
 		}
 	})
 
+	t.Run("uses lf line endings when retries are exhausted", func(t *testing.T) {
+		t.Parallel()
+
+		// Each block needs a retry, so the whole input must keep its syntax.
+		const block = "* 0\n--\n  |-"
+		want := strings.Repeat(block+"\n# a\n", maxRetries-1) + block
+		for _, tt := range []struct{ name, in string }{
+			{"lf", want},
+			{"cr", strings.ReplaceAll(want, "\n", "\r")},
+			{"crlf", strings.ReplaceAll(want, "\n", "\r\n")},
+			{"mixed", strings.NewReplacer("\n--", "\r--", "\n  |-", "\r\n  |-").Replace(want)},
+		} {
+			t.Run(tt.name, func(t *testing.T) {
+				t.Parallel()
+
+				src := []byte(tt.in)
+				if _, err := Strict(src); err == nil {
+					t.Fatalf("Strict(%q) gives no error, want one: the case is not open any more", src)
+				}
+				out, err := Source(src)
+				if err != nil || string(out) != want {
+					t.Fatalf("Source(%q) = %q, %v, want %q", src, out, err, want)
+				}
+				if string(src) != tt.in {
+					t.Fatalf("Source changed its input to %q, want %q", src, tt.in)
+				}
+				if err := check(markdown.Parse(src), out); err != nil {
+					t.Fatalf("Source(%q) changes the meaning or kept syntax: %v", src, err)
+				}
+				twice, err := Source(out)
+				if err != nil || !bytes.Equal(out, twice) {
+					t.Fatalf("Source is not idempotent\ninput: %q\n once: %q\ntwice: %q\nerror: %v", src, out, twice, err)
+				}
+				out[0] = '!'
+				if string(src) != tt.in {
+					t.Fatalf("Source output aliases its input: got %q, want %q", src, tt.in)
+				}
+			})
+		}
+	})
+
 	t.Run("formats a link title in text that holds its quotes", func(t *testing.T) {
 		t.Parallel()
 

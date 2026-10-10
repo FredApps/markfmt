@@ -11,9 +11,9 @@ import (
 
 // Source returns src in the canonical style, with LF line endings. A
 // top-level block whose canonical form would change what the input means
-// keeps the bytes of the input, and where no block can be found for a
-// difference, the whole input stays as it is: Source formats what it can,
-// and changes nothing that it cannot keep.
+// keeps the input syntax. Where no block can be found for a difference or
+// retries run out, the whole input keeps its syntax. Line endings are
+// converted even when the syntax stays as written.
 //
 // Source returns an error only when the output would pass outputLimit,
 // which is a printer bug.
@@ -47,7 +47,9 @@ func Source(src []byte) ([]byte, error) {
 		}
 		raw[block] = true
 	}
-	return bytes.Clone(src), nil
+	p := printer{out: make([]byte, 0, len(src)), max: len(src)}
+	p.writeLF(src)
+	return p.out, nil
 }
 
 const maxRetries = 4
